@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Profiling;
 using Random = UnityEngine.Random;
@@ -30,7 +31,11 @@ public class OptimUnit : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Profiler.BeginSample("Handling Time"); // begin profiling a piece with a custom label
         HandleTime();
+        Profiler.EndSample(); // ends the current profiling sample
+
+        Profiler.BeginSample("Rotating"); // begin profiling
 
         var t = transform;
 
@@ -43,9 +48,17 @@ public class OptimUnit : MonoBehaviour
             transform.Rotate(0,0, currentAngularVelocity * Time.deltaTime);
         else if(transform.position.z < 0)
             transform.Rotate(0,0, -currentAngularVelocity * Time.deltaTime);
+
+       Profiler.EndSample(); // end profiling 
+
+        Profiler.BeginSample("Moving"); // begin profiling 
         
         Move();
 
+        Profiler.EndSample(); // end profiling
+
+        Profiler.BeginSample("Boundary Check"); // begin profiling
+        
         //check if we are moving away from the zone and invert velocity if this is the case
         if (transform.position.x > areaSize.x && currentVelocity.x > 0)
         {
@@ -67,7 +80,9 @@ public class OptimUnit : MonoBehaviour
         {
             currentVelocity.z *= -1;
             PickNewVelocityChangeTime();
+
         }
+        Profiler.EndSample(); // end profiling
     }
 
 
@@ -108,6 +123,8 @@ public class OptimUnit : MonoBehaviour
         }
         
         transform.position = position;
+
+
     }
 
     private void HandleTime()
